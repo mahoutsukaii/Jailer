@@ -1,0 +1,23 @@
+author: mahoutsukaii
+database: false
+description: Jail players who break the rules for a certain amount of time.
+generator: http://dinnerbone.com/minecraft/tools/pluginator/
+main: me.mahoutsukaii.plugins.jailer.Jailer
+name: Jailer
+startup: postworld
+url: http://jadon-mc.net/
+version: '1.0'
+
+commands:
+  jail:
+    description: jail a player.
+    usage: /<command> [player] [time]
+  bail:
+    description: release a player from the jail.
+    usage: /<command> [player]
+  setjail:
+    description: sets the jail for the map.
+    usage: /<command>
+  buildjail:
+    description: builds the jail.
+    usage: /<command>

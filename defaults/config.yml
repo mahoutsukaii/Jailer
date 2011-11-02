@@ -1,0 +1,15 @@
+settings:
+    enableJail: true
+    enableBroadcast: true
+    allowBuild: false
+messages:
+    broadcastJail: '&e%player%&6 was jailed by &e%admin%&6 for &e%time%&6!'
+    failedLeave: '&cYou have not been released yet! You have &e%time%&c left!'
+    beenJailed: '&cYou were jailed for &e%time%.'
+    released: You are free to leave the jail.
+    vandalMsg: '&4You may not vandalise the jail!'
+location:
+    jailX: 0
+    jailY: 0
+    jailZ: 0
+    jailWorld: "world"
