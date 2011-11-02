@@ -1,0 +1,32 @@
+Summary:
+
+This plugin adds a jail to minecraft, for all those offenders whose offences are too small to be banned. While in the jail, players cannot teleport out of it, or break blocks. Players remain inside the jail until they are either granted bail or their sentence runs out.
+
+List of commands:
+
+/jail [player] [time] - time can be, for example, 10m, 30s, 2h (10 minutes, 30 seconds, 2 hours).
+
+/bail [player] - releases the player from jail.
+
+/setjail - sets the location of the jail.
+
+/buildjail - in case you are lazy, this will build you a jail and /setjail it there. (note, this was just me doing this for fun, wasn't intended to be taken seriously)
+
+Permissions:
+
+This plugin requires bPermissions to function. Here are the following nodes:
+
+jailer.jail
+jailer.bail
+jailer.setjail
+jailer.buildjail
+
+Hopefully I don't need to explain them to you.
+
+Setting up:
+
+This plugin is extremely simple to set up. Running the plugin once will generate its default configuration. Edit this as necessary, and start again.
+
+Final notess:
+
+All players who are in jail will come out of jail if the server is restarted.
