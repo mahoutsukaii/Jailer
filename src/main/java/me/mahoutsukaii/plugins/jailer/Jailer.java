@@ -209,6 +209,7 @@ public class Jailer extends JavaPlugin {
 		JailBuilding jailBuilding = new JailBuilding(player.getWorld(), player.getLocation().getBlock().getX(), player.getLocation().getBlock().getY()-1, player.getLocation().getBlock().getZ(),0);
 		jailBuilding.build();
 		player.sendMessage(ChatColor.GREEN + "Jail built!");
+		log.log(Level.INFO, "[Jailer] " + player.getName() + "built a jail at (" + player.getLocation().getBlockX() + ", " + player.getLocation().getBlockY() + ", " + player.getLocation().getBlockZ() + ")");
 		setJail(sender, args);
 		return true;
 	}
@@ -249,6 +250,7 @@ public class Jailer extends JavaPlugin {
 
 		saveConfig();
 		sender.sendMessage(ChatColor.GREEN + "Jail has been set!");
+		log.log(Level.INFO, "[Jailer] " + player.getName() + "set the jail to (" + player.getLocation().getBlockX() + ", " + player.getLocation().getBlockY() + ", " + player.getLocation().getBlockZ() + ")");
 		return true;
 	}
 	
@@ -292,7 +294,8 @@ public class Jailer extends JavaPlugin {
 		jailTimes.set(index, (long) 0);
 		
 		
-		sender.sendMessage(ChatColor.GREEN + "You have bailed out " + expandName(args[0]));
+		sender.sendMessage(ChatColor.GREEN + "You have bailed out " + victim);
+		log.log(Level.INFO, "[Jailer] " + sender.getName() + " bailed out " + victim);
 		return true;
 	}
 	
@@ -371,7 +374,9 @@ public class Jailer extends JavaPlugin {
 			broadcastMsg = broadcastMsg.replaceAll("%player%",victim.getName());
 			getServer().broadcastMessage(formatMessage(broadcastMsg));
 		}
+		sender.sendMessage(ChatColor.GREEN + victim.getName() + " was sent to jail!");
 		sendToJail(victim, temptime);
+		log.log(Level.INFO, "[Jailer] " + sender.getName() + "  jailed " + victim.getName());
 		return true;
 		
 	}
