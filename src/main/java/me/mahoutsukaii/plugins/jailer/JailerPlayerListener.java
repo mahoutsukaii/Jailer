@@ -15,6 +15,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 
 
@@ -30,7 +31,7 @@ public class JailerPlayerListener extends PlayerListener {
 	}
 
 
-	public void onPlayerTeleport(PlayerCommandPreprocessEvent event) {
+	public void onPlayerTeleport(PlayerTeleportEvent event) {
 		Player player = event.getPlayer();
 		
 		if(plugin.jailedPlayers.contains(player.getName()))
@@ -40,7 +41,7 @@ public class JailerPlayerListener extends PlayerListener {
 			String failMsg = plugin.failedLeave;
 			failMsg = failMsg.replaceAll("%time%", plugin.getTimeDifference(tempTime));
 			player.sendMessage(plugin.formatMessage(failMsg));
-			event.setCancelled(true);
+			event.setTo(plugin.jailLocation);
 			
 		}
 	}
