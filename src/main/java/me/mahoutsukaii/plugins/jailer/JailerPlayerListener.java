@@ -55,7 +55,7 @@ public class JailerPlayerListener extends PlayerListener {
 	public void onPlayerChat(PlayerChatEvent event) {
 
 		Player player = event.getPlayer();
-		if(plugin.jailedPlayers.contains(player.getName()));
+		if(plugin.jailedPlayers.contains(player.getName()))
 		{
 			player.sendMessage(ChatColor.DARK_RED + "You cannot speak in the jail!");
 			event.setCancelled(true);
