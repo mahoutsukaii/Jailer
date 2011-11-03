@@ -2,6 +2,7 @@ settings:
     enableJail: true
     enableBroadcast: true
     allowBuild: false
+    mutedJail: false
 messages:
     broadcastJail: '&e%player%&6 was jailed by &e%admin%&6 for &e%time%&6!'
     failedLeave: '&cYou have not been released yet! You have &e%time%&c left!'

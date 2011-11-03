@@ -40,6 +40,7 @@ public class Jailer extends JavaPlugin {
 	public static boolean enableJail;
 	public static boolean enableBroadcast;
 	public static boolean allowBuild;
+	public static boolean mutedJail;
 	
 	public static String broadcastJail;
 	public static String failedLeave;
@@ -86,6 +87,7 @@ public class Jailer extends JavaPlugin {
 		enableJail = properties.getNode("settings").getBoolean("enableJail", true);
 		enableBroadcast = properties.getNode("settings").getBoolean("enableBroadcast", true);
 		allowBuild = properties.getNode("settings").getBoolean("allowBuild", false);
+		mutedJail = properties.getNode("settings").getBoolean("mutedJail", false);
 
 		broadcastJail = properties.getNode("messages").getString("broadcastJail", "%player% was jailed by %admin% for %time%!");
 		failedLeave = properties.getNode("messages").getString("failedLeave", "&aYou have not been released yet! You have %time% left!");
@@ -138,6 +140,10 @@ public class Jailer extends JavaPlugin {
 			pm.registerEvent(Event.Type.BLOCK_PLACE, blockListener, Priority.Normal, this);
 			pm.registerEvent(Event.Type.PLAYER_BUCKET_EMPTY, playerListener, Priority.Normal, this);
 			pm.registerEvent(Event.Type.PLAYER_BUCKET_FILL, playerListener, Priority.Normal, this);
+		}
+		if(mutedJail)
+		{
+			pm.registerEvent(Event.Type.PLAYER_CHAT, playerListener, Priority.Normal, this);
 		}
 		pm.registerEvent(Event.Type.PLAYER_MOVE, playerListener, Priority.Monitor, this);
 		pm.registerEvent(Event.Type.PLAYER_RESPAWN, playerListener, Priority.Highest, this);

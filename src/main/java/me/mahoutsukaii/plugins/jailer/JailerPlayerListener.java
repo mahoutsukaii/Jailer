@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
+import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerListener;
@@ -43,6 +44,21 @@ public class JailerPlayerListener extends PlayerListener {
 			player.sendMessage(plugin.formatMessage(failMsg));
 			event.setTo(plugin.jailLocation);
 			
+		}
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.bukkit.event.player.PlayerListener#onPlayerChat(org.bukkit.event.player.PlayerChatEvent)
+	 */
+	@Override
+	public void onPlayerChat(PlayerChatEvent event) {
+
+		Player player = event.getPlayer();
+		if(plugin.jailedPlayers.contains(player.getName()));
+		{
+			player.sendMessage(ChatColor.DARK_RED + "You cannot speak in the jail!");
+			event.setCancelled(true);
 		}
 	}
 
