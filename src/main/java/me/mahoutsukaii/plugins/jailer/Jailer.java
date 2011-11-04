@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,15 +25,19 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 
+import util.Cell;
 import util.JailBuilding;
+import util.MySQLDatabase;
 
 import com.nijikokun.bukkit.Permissions.Permissions;
 
+@SuppressWarnings("deprecation")
 public class Jailer extends JavaPlugin {
 
 	public static boolean dev = false;
 
 	public static final Logger log = Logger.getLogger("Minecraft");
+
 
 	public Configuration properties = new Configuration(new File("plugins/Jailer/config.yml"));
 	public String maindir = "plugins/Jailer/";
@@ -41,12 +46,16 @@ public class Jailer extends JavaPlugin {
 	public static boolean enableBroadcast;
 	public static boolean allowBuild;
 	public static boolean mutedJail;
+	public static boolean logoutAllowed;
 	
 	public static String broadcastJail;
 	public static String failedLeave;
 	public static String beenJailed;
 	public static String releasedMsg;
 	public static String vandalMessage;
+	public List<Object> unjailableGroups;
+	
+	public List<Cell> cells;
 
 	
 	public int jailX;
@@ -64,6 +73,7 @@ public class Jailer extends JavaPlugin {
 	private final JailerBlockListener blockListener = new JailerBlockListener(this);
 
 	Permissions CurrentPermissions = null;
+	MySQLDatabase db;
 
 	public void setupPermissions() {
 		Plugin plugin = this.getServer().getPluginManager().getPlugin("Permissions");
@@ -88,6 +98,7 @@ public class Jailer extends JavaPlugin {
 		enableBroadcast = properties.getNode("settings").getBoolean("enableBroadcast", true);
 		allowBuild = properties.getNode("settings").getBoolean("allowBuild", false);
 		mutedJail = properties.getNode("settings").getBoolean("mutedJail", false);
+		logoutAllowed = properties.getNode("settings").getBoolean("logoutAllowed", false);
 
 		broadcastJail = properties.getNode("messages").getString("broadcastJail", "%player% was jailed by %admin% for %time%!");
 		failedLeave = properties.getNode("messages").getString("failedLeave", "&aYou have not been released yet! You have %time% left!");
@@ -98,6 +109,7 @@ public class Jailer extends JavaPlugin {
 		this.jailY = properties.getNode("location").getInt("jailY", 0);
 		this.jailZ = properties.getNode("location").getInt("jailZ", 0);
 		this.jailWorld = properties.getNode("location").getString("jailWorld", "world");
+		this.unjailableGroups = properties.getList("unjailableGroups");
 
 		jailLocation = new Location(Bukkit.getServer().getWorld(jailWorld),jailX,jailY,jailZ);
 
@@ -131,8 +143,7 @@ public class Jailer extends JavaPlugin {
 			log.log(Level.CONFIG, "[Jailer] Disabled in config. disabling...");
 			this.getServer().getPluginManager().disablePlugin(this);
 		}
-		jailedPlayers.clear();
-		jailTimes.clear();
+
 		PluginManager pm = getServer().getPluginManager();
 		if(!allowBuild)
 		{
@@ -144,6 +155,13 @@ public class Jailer extends JavaPlugin {
 		if(mutedJail)
 		{
 			pm.registerEvent(Event.Type.PLAYER_CHAT, playerListener, Priority.Normal, this);
+		}
+		if(!logoutAllowed)
+		{
+			pm.registerEvent(Event.Type.PLAYER_JOIN, playerListener, Priority.Normal, this);
+			pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Priority.Normal, this);
+	        db = new MySQLDatabase();
+			db.initialise(this);
 		}
 		pm.registerEvent(Event.Type.PLAYER_MOVE, playerListener, Priority.Monitor, this);
 		pm.registerEvent(Event.Type.PLAYER_RESPAWN, playerListener, Priority.Highest, this);
@@ -254,6 +272,11 @@ public class Jailer extends JavaPlugin {
 		return true;
 	}
 	
+	public void createCell(World world, Location location)
+	{
+		cells.add(new Cell(world, location));
+	}
+	
 	public boolean bail(CommandSender sender, String[] args)
 	{
 
@@ -280,7 +303,7 @@ public class Jailer extends JavaPlugin {
 			return false;
 		}
 		
-		boolean offline = false;
+
 		String victim = expandName(args[0]);
 		if(!jailedPlayers.contains(victim))
 		{
@@ -367,6 +390,14 @@ public class Jailer extends JavaPlugin {
 			sender.sendMessage(ChatColor.RED + victim.getName() + " is already in jail.");
 			return true;
 		}
+		
+	//	log.log(Level.INFO, Permissions.Security.getGroup(victim.getWorld().getName(), victim.getName()));
+		
+		if(unjailableGroups.contains(Permissions.Security.getGroup(victim.getWorld().getName(), victim.getName())))
+		{
+			sender.sendMessage(ChatColor.RED + "Can't jail " + Permissions.Security.getGroup(victim.getWorld().getName(), victim.getName()) + "s!");
+			return true;
+		}
 		if(enableBroadcast)
 		{
 			String broadcastMsg = broadcastJail.replaceAll("%time%", getTimeDifference(temptime+10));
@@ -381,15 +412,23 @@ public class Jailer extends JavaPlugin {
 		
 	}
 	
+	
 	public void sendToJail(Player player, long jailTime)
 	{
 		jailedPlayers.add(player.getName());
 		jailTimes.add(jailTime);
+		if(!logoutAllowed)
+		db.jailPlayer(player.getName(), jailTime - new Date().getTime());
 		
+		//assign it a cell;
 		
+		for(int i=0; i < cells.size(); i++)
+		{
+
+		}
 		player.teleport(jailLocation);
-		String jailMsg = this.beenJailed.replaceAll("%time%",getTimeDifference(jailTime+1000) );
-		player.sendMessage(formatMessage(jailMsg));
+	//	String jailMsg = Jailer.beenJailed.replaceAll("%time%",getTimeDifference(jailTime+1000) );
+	//	player.sendMessage(formatMessage(jailMsg));
 		
 		
 	}

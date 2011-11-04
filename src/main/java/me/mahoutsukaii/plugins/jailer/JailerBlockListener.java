@@ -1,6 +1,5 @@
 package me.mahoutsukaii.plugins.jailer;
 
-import org.bukkit.ChatColor;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -21,7 +20,7 @@ public class JailerBlockListener extends BlockListener{
 		
 		if(plugin.jailedPlayers.contains(event.getPlayer().getName()))
 		{
-			event.getPlayer().sendMessage(plugin.formatMessage(plugin.vandalMessage));
+			event.getPlayer().sendMessage(plugin.formatMessage(Jailer.vandalMessage));
 			event.setCancelled(true);
 		}
 
@@ -34,7 +33,7 @@ public class JailerBlockListener extends BlockListener{
 	public void onBlockPlace(BlockPlaceEvent event) {
 		if(plugin.jailedPlayers.contains(event.getPlayer().getName()))
 		{
-			event.getPlayer().sendMessage(plugin.formatMessage(plugin.vandalMessage));
+			event.getPlayer().sendMessage(plugin.formatMessage(Jailer.vandalMessage));
 			event.setCancelled(true);
 		}
 		

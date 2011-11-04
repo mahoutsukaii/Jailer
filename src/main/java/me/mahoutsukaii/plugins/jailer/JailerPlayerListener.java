@@ -7,14 +7,15 @@ import java.util.Date;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerChatEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
@@ -39,7 +40,7 @@ public class JailerPlayerListener extends PlayerListener {
 		{
 			int index = plugin.jailedPlayers.indexOf(player.getName());
 			long tempTime = plugin.jailTimes.get(index);
-			String failMsg = plugin.failedLeave;
+			String failMsg = Jailer.failedLeave;
 			failMsg = failMsg.replaceAll("%time%", plugin.getTimeDifference(tempTime));
 			player.sendMessage(plugin.formatMessage(failMsg));
 			event.setTo(plugin.jailLocation);
@@ -48,10 +49,32 @@ public class JailerPlayerListener extends PlayerListener {
 	}
 
 
-	/* (non-Javadoc)
-	 * @see org.bukkit.event.player.PlayerListener#onPlayerChat(org.bukkit.event.player.PlayerChatEvent)
-	 */
-	@Override
+
+	public void onPlayerJoin(PlayerJoinEvent event) {
+		Player player = event.getPlayer();
+		if(plugin.jailedPlayers.contains(player.getName()))
+		{
+			int index = plugin.jailedPlayers.indexOf(player.getName());
+			long newTime = new Date().getTime() + plugin.db.getTimeRemaining(player.getName());
+			plugin.jailTimes.set(index, newTime);
+		}
+	}
+
+
+	public void onPlayerQuit(PlayerQuitEvent event) {
+
+		Player player = event.getPlayer();
+		if(plugin.jailedPlayers.contains(player.getName()))
+		{
+			int index = plugin.jailedPlayers.indexOf(player.getName());
+			long tempTime = plugin.jailTimes.get(index);
+			long timeRemaining = tempTime - new Date().getTime();
+			
+			plugin.db.setTimeRemaining(player.getName(), timeRemaining);
+		}
+	}
+
+
 	public void onPlayerChat(PlayerChatEvent event) {
 
 		Player player = event.getPlayer();
@@ -76,9 +99,11 @@ public class JailerPlayerListener extends PlayerListener {
 
 			if(tempTime <= new Date().getTime())
 			{
-				player.sendMessage(plugin.formatMessage(plugin.releasedMsg));
+				player.sendMessage(plugin.formatMessage(Jailer.releasedMsg));
 				plugin.jailedPlayers.remove(index);
 				plugin.jailTimes.remove(index);
+				if(!Jailer.logoutAllowed)
+				plugin.db.bail(player.getName());
 			}
 
 		}
@@ -104,7 +129,7 @@ public class JailerPlayerListener extends PlayerListener {
 	public void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
 		if(plugin.jailedPlayers.contains(event.getPlayer().getName()))
 		{
-			event.getPlayer().sendMessage(plugin.formatMessage(plugin.vandalMessage));
+			event.getPlayer().sendMessage(plugin.formatMessage(Jailer.vandalMessage));
 			event.setCancelled(true);
 		}
 		
@@ -114,7 +139,7 @@ public class JailerPlayerListener extends PlayerListener {
 	public void onPlayerBucketFill(PlayerBucketFillEvent event) {
 		if(plugin.jailedPlayers.contains(event.getPlayer().getName()))
 		{
-			event.getPlayer().sendMessage(plugin.formatMessage(plugin.vandalMessage));
+			event.getPlayer().sendMessage(plugin.formatMessage(Jailer.vandalMessage));
 			event.setCancelled(true);
 		}
 		
