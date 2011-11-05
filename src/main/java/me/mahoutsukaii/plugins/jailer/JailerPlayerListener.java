@@ -44,6 +44,7 @@ public class JailerPlayerListener extends PlayerListener {
 			failMsg = failMsg.replaceAll("%time%", plugin.getTimeDifference(tempTime));
 			player.sendMessage(plugin.formatMessage(failMsg));
 			event.setTo(plugin.jailLocation);
+			//event.setTo(plugin.respawnHandler.findCell(player));
 			
 		}
 	}
