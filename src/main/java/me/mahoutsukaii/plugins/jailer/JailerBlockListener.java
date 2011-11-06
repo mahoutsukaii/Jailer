@@ -18,10 +18,22 @@ public class JailerBlockListener extends BlockListener{
 	@Override
 	public void onBlockBreak(BlockBreakEvent event) {
 		
-		if(plugin.jailedPlayers.contains(event.getPlayer().getName()))
+		if(plugin.jailedPlayers.contains(event.getPlayer().getName())) 
 		{
-			event.getPlayer().sendMessage(plugin.formatMessage(Jailer.vandalMessage));
-			event.setCancelled(true);
+			if(!Jailer.allowBuild)
+			{
+				event.getPlayer().sendMessage(plugin.formatMessage(Jailer.vandalMessage));
+				event.setCancelled(true);
+			}
+			else
+			{
+				if(event.getBlock().getTypeId() == 1 |  
+						event.getBlock().getTypeId() == 98 |
+						event.getBlock().getTypeId() == 101 |
+						event.getBlock().getTypeId() == 71)
+					
+				plugin.getServer().broadcastMessage(plugin.formatMessage(Jailer.escapedMessage.replaceAll("%player%", event.getPlayer().getDisplayName())));
+			}
 		}
 
 	}
@@ -31,13 +43,15 @@ public class JailerBlockListener extends BlockListener{
 	 */
 	@Override
 	public void onBlockPlace(BlockPlaceEvent event) {
-		if(plugin.jailedPlayers.contains(event.getPlayer().getName()))
+		if(plugin.jailedPlayers.contains(event.getPlayer().getName())) 
 		{
-			event.getPlayer().sendMessage(plugin.formatMessage(Jailer.vandalMessage));
-			event.setCancelled(true);
+			if(!Jailer.allowBuild)
+			{
+				event.getPlayer().sendMessage(plugin.formatMessage(Jailer.vandalMessage));
+				event.setCancelled(true);
+			}
+			
 		}
-		
-		
 		
 	}
 	

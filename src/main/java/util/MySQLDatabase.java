@@ -9,8 +9,12 @@ package util;
  *
  * @author Alec
  */
+
+
+
 import java.io.File;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,16 +35,34 @@ public class MySQLDatabase{
 	public static Connection getSQLConnection() {
 		Configuration Config = new Configuration(new File("plugins/Jailer/config.yml"));
 		Config.load();
-		String mysqlDatabase = Config.getNode("MySQL").getString("database","jdbc:mysql://localhost:3306/minecraft");
-		String mysqlUser = Config.getNode("MySQL").getString("user","root");
-		String mysqlPassword = Config.getNode("MySQL").getString("password","root");
+		if(Jailer.useMySQL)
+		{
+			String mysqlDatabase = Config.getString("mysql-database","jdbc:mysql://localhost:3306/minecraft");
+			String mysqlUser = Config.getString("mysql-user","root");
+			String mysqlPassword = Config.getString("mysql-password","root");
+			try {
 
-		try {
-
-			return DriverManager.getConnection(mysqlDatabase + "?autoReconnect=true&user=" + mysqlUser + "&password=" + mysqlPassword);
-		} catch (SQLException ex) {
-			Jailer.log.log(Level.SEVERE, "Unable to retreive connection", ex);
+				return DriverManager.getConnection(mysqlDatabase + "?autoReconnect=true&user=" + mysqlUser + "&password=" + mysqlPassword);
+			} catch (SQLException ex) {
+				Jailer.log.log(Level.SEVERE, "Unable to retreive connection", ex);
+			}
 		}
+		else
+		{
+			try {
+			    try {
+					Class.forName("org.sqlite.JDBC");
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return  DriverManager.getConnection("jdbc:sqlite:plugins/Jailer/jail.db");
+			} catch (SQLException ex) {
+				Jailer.log.log(Level.SEVERE, "Unable to retreive connection", ex);
+			}
+			
+		}
+
 		return null;
 	}
 
@@ -50,6 +72,11 @@ public class MySQLDatabase{
 		this.mysqlTable = plugin.getConfiguration().getNode("MySQL").getString("table","banlist");
 		plugin.jailedPlayers.clear();
 		plugin.jailTimes.clear();
+		
+		if(!Jailer.useMySQL)
+		{
+			makeSQLiteTables();
+		}
 		if (conn == null) {
 			Jailer.log.log(Level.SEVERE, "[Jailer] Could not establish SQL connection. Disabling Jailer");
 			plugin.getServer().getPluginManager().disablePlugin(plugin);
@@ -182,7 +209,7 @@ public class MySQLDatabase{
 		PreparedStatement ps = null;
 		try {
 			conn = getSQLConnection();
-			ps = conn.prepareStatement("DELETE FROM " + mysqlTable + " WHERE name = ? LIMIT 1");
+			ps = conn.prepareStatement("DELETE FROM " + mysqlTable + " WHERE name = ?");
 			ps.setString(1, player);
 			ps.executeUpdate();
 		} catch (SQLException ex) {
@@ -202,5 +229,62 @@ public class MySQLDatabase{
 		return true;
 
 	}
+	
+	public void makeSQLiteTables()
+	{
+		String query = 	"CREATE TABLE `jail` ("
+				+		"  `name` varchar(32) NOT NULL,"
+				+		"  `timeleft` int(10) NOT NULL,"
+				+ 		" PRIMARY KEY (`name`)"
+				+	") ";
+		
+		if(!tableExists())
+		{
+	    	PreparedStatement ps = null;
+    		Connection conn = getSQLConnection();
+    		try {
+    			conn = getSQLConnection();
+    			ps = conn.prepareStatement(query);
+    			ps.executeUpdate();
+    	
+    		} catch (SQLException ex) {
+    			Jailer.log.log(Level.SEVERE, "[Jailer] Couldn't execute SQL statement: ", ex);
+    		} finally {
+    			try {
+    				if (ps != null)
+    					ps.close();
+    				if (conn != null)
+    					conn.close();
+    			} catch (SQLException ex) {
+    				Jailer.log.log(Level.SEVERE, "[Jailer] Failed to close SQL connection: ", ex);
+    			}
+    		}
+    		
+		}
+		
+	}
+	private boolean tableExists() {
+    	ResultSet rs = null;
+    	try {
+    		Connection conn = getSQLConnection();
+    		DatabaseMetaData dbm = conn.getMetaData();
+    		rs = dbm.getTables(null, null, "jail", null);
+    		if (!rs.next()) {
+    			return false;
+    		}
+    		return true;
+    	} catch (SQLException ex) {
+			Jailer.log.log(Level.SEVERE, "[Jailer] Couldn't execute SQL statement: ", ex);
+    		return false;
+    	} finally {
+    		try {
+    			if (rs != null) {
+    				rs.close();
+    			}
+    		} catch (SQLException ex) {
+				Jailer.log.log(Level.SEVERE, "[Jailer] Failed to close SQL connection: ", ex);
+    		}
+    	}
+    }
 	
 }
